@@ -175,10 +175,8 @@ public class Menu {
     }
 
     private void userMenu() {
-//        boolean rightChoice;
         int choice;
         do {
-//            rightChoice = true;
             System.out.println(RM.getString("userMenuHeader"));
             System.out.println(RM.getString("userMenuText"));
             choice = menuChoice(1, 4);
@@ -197,7 +195,6 @@ public class Menu {
                     break;
                 default:
                     System.out.println(RM.getString("incorrectInput"));
-//                    rightChoice = false;
             }
         } while (true);
     }

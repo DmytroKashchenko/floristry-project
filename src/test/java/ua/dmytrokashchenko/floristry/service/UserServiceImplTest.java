@@ -4,12 +4,18 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.MockitoRule;
+import org.mockito.quality.Strictness;
 import ua.dmytrokashchenko.floristry.domain.user.Address;
 import ua.dmytrokashchenko.floristry.domain.user.User;
 import ua.dmytrokashchenko.floristry.domain.user.UserRole;
 import ua.dmytrokashchenko.floristry.repository.UserRepository;
-import ua.dmytrokashchenko.floristry.repository.UserRepositoryImpl;
 import ua.dmytrokashchenko.floristry.service.exception.UserLoginException;
 import ua.dmytrokashchenko.floristry.service.exception.UserRegistrationException;
 import ua.dmytrokashchenko.floristry.service.exception.UserValidationException;
@@ -17,11 +23,17 @@ import ua.dmytrokashchenko.floristry.service.validator.UserValidator;
 
 import java.util.Optional;
 
+@RunWith(MockitoJUnitRunner.class)
 public class UserServiceImplTest {
-    private UserServiceImpl userService;
+    @Mock
     private UserRepository userRepository;
+    @Mock
     private PasswordService passwordService;
+    @Mock
     private UserValidator userValidator;
+    @InjectMocks
+    private UserServiceImpl userService;
+
     private User testUser;
 
     @Rule
@@ -29,10 +41,6 @@ public class UserServiceImplTest {
 
     @Before
     public void setUp() {
-        passwordService = Mockito.mock(PasswordServiceImpl.class);
-        userValidator = Mockito.mock(UserValidator.class);
-        userRepository = Mockito.mock(UserRepositoryImpl.class);
-        userService = new UserServiceImpl(userRepository, userValidator, passwordService);
         Address testAddress = new Address("Kyiv", "Street", 14, 101);
         testUser = new User.UserBuilder()
                 .withName("Username")
@@ -46,6 +54,7 @@ public class UserServiceImplTest {
 
     @Test
     public void shouldPassRegistration() throws UserValidationException, UserRegistrationException {
+        Mockito.doNothing().when(userValidator).validateUser(testUser);
         Mockito.when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.empty());
         userService.register(testUser);
     }
@@ -71,8 +80,6 @@ public class UserServiceImplTest {
         exception.expect(UserLoginException.class);
         exception.expectMessage("No such user with this login and password");
         Mockito.when(userRepository.findByEmail(testUser.getEmail())).thenReturn(Optional.empty());
-        Mockito.when(passwordService.matchPassword("testPassword", testUser.getPassword()))
-                .thenReturn(true);
         userService.login("test@email.com", "testPassword");
     }
 
